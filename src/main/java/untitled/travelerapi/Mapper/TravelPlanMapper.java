@@ -70,6 +70,13 @@ public class TravelPlanMapper {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getLocations().stream()
+                        .sorted((l1, l2) -> {
+                            Integer o1 = l1.getVisitOrder();
+                            Integer o2 = l2.getVisitOrder();
+                            if (o1 == null) return 1;
+                            if (o2 == null) return -1;
+                            return o1.compareTo(o2);
+                        })
                         .map(TravelPlanMapper::toLocationResponse)
                         .collect(Collectors.toList())
         );
