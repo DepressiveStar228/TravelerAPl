@@ -53,11 +53,11 @@ import {
   updateTravelPlan,
   deleteTravelPlan,
   thinkTime,
-} from './api-client.js';
+} from '../../../../main/java/untitled/travelerapi/utils/api-client.js';
 import {
   generateTravelPlan,
   generateLocation,
-} from './data-generator.js';
+} from '../../../../main/java/untitled/travelerapi/utils/data-generator.js';
 
 // Кастомні метрики для читання
 const readOperations = new Counter('read_operations');

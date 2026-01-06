@@ -47,11 +47,11 @@ import {
   listTravelPlans,
   verifyPlanDeleted,
   thinkTime,
-} from './api-client.js';
+} from '../../../../main/java/untitled/travelerapi/utils/api-client.js';
 import {
   generateTravelPlan,
   generateLocation,
-} from './data-generator.js';
+} from '../../../../main/java/untitled/travelerapi/utils/data-generator.js';
 
 // ============================================================================
 // НАЛАШТУВАННЯ ТЕСТУ

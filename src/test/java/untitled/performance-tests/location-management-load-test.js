@@ -47,12 +47,12 @@ import {
   deleteLocation,
   deleteTravelPlan,
   thinkTime,
-} from './api-client.js';
+} from '../../../../main/java/untitled/travelerapi/utils/api-client.js';
 import {
   generateTravelPlan,
   generateLocation,
   generateLocationWithDates,
-} from './data-generator.js';
+} from '../../../../main/java/untitled/travelerapi/utils/data-generator.js';
 
 // ============================================================================
 // НАЛАШТУВАННЯ ТЕСТУ
@@ -60,9 +60,9 @@ import {
 
 export const options = {
   stages: [
-    { duration: '2m', target: 30 },  // Ramp-up до 30 користувачів
-    { duration: '8m', target: 30 },  // Стабільне навантаження
-    { duration: '2m', target: 0 },   // Ramp-down
+    { duration: '2m', target: 100 },   // Ramp-up до 100 користувачів
+    { duration: '2m', target: 1000 },  // Швидкий сплеск
+    { duration: '1m', target: 0 },     // Швидке зниження
   ],
 
   thresholds: {
@@ -200,6 +200,7 @@ export default function () {
     name: 'Eiffel Tower (Night Visit)',
     budget: 30.00,
     notes: 'Amazing night illumination',
+    version: location1.version,
   };
   
   const updatedLocation = updateLocation(location1.id, updateData);
@@ -209,6 +210,7 @@ export default function () {
       'location name updated': (loc) => loc.name === 'Eiffel Tower (Night Visit)',
       'location budget updated': (loc) => loc.budget === 30.00,
       'location notes updated': (loc) => loc.notes === 'Amazing night illumination',
+      'version was incremented': (loc) => loc.version > location1.version,
     });
   }
 

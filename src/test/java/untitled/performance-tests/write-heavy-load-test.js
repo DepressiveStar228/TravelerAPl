@@ -59,12 +59,12 @@ import {
   deleteTravelPlan,
   deleteLocation,
   thinkTime,
-} from './api-client.js';
+} from '../../../../main/java/untitled/travelerapi/utils/api-client.js';
 import {
   generateTravelPlan,
   generateLocation,
   generateMultipleLocations,
-} from './data-generator.js';
+} from '../../../../main/java/untitled/travelerapi/utils/data-generator.js';
 
 // Кастомні метрики для запису
 const writeOperations = new Counter('write_operations');
@@ -231,6 +231,7 @@ export function intensiveWritePath() {
     const updateData = {
       name: `Updated Location ${Date.now()}`,
       budget: Math.random() * 200 + 50,
+      version: location.version,
       notes: 'Updated during write-heavy test',
     };
     

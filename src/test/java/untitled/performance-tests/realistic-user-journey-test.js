@@ -49,7 +49,7 @@
 
 import { check, sleep, group } from 'k6';
 import { Rate, Counter, Trend } from 'k6/metrics';
-import { randomIntBetween } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { DEFAULT_THRESHOLDS } from '../../../../main/java/untitled/travelerapi/config/endpoints.js';
 import {
   createTravelPlan,
@@ -62,12 +62,12 @@ import {
   deleteLocation,
   checkHealth,
   thinkTime,
-} from './api-client.js';
+} from '../../../../main/java/untitled/travelerapi/utils/api-client.js';
 import {
   generateTravelPlan,
   generateLocation,
   generateLocationWithDates,
-} from './data-generator.js';
+} from '../../../../main/java/untitled/travelerapi/utils/data-generator.js';
 
 // Кастомні метрики для user journeys
 const sessionCompleted = new Rate('session_completion_rate');
@@ -126,7 +126,7 @@ export const options = {
 // ГОЛОВНА ФУНКЦІЯ: ВИБІР ТИПУ КОРИСТУВАЧА
 // ============================================================================
 
-export default function realisticUserJourney() {
+export function realisticUserJourney() {
   const sessionStart = Date.now();
   let actionsCount = 0;
   let sessionSuccess = true;
@@ -345,6 +345,7 @@ function experiencedUserJourney() {
               name: location.name + ' (Updated)',
               budget: location.budget ? location.budget + 50 : 100,
               notes: 'Updated by experienced user',
+              version: location.version,
             };
             
             updateLocation(location.id, updateData);
