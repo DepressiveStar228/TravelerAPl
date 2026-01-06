@@ -1,5 +1,8 @@
 package untitled.travelerapi.Controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import untitled.travelerapi.DTO.*;
 import untitled.travelerapi.Service.TravelPlanService;
 import jakarta.validation.Valid;
@@ -25,9 +28,9 @@ public class TravelPlanController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TravelPlanDetails>> getAllTravelPlans() {
-        List<TravelPlanDetails> plans = travelPlanService.getAllPlans();
-        return ResponseEntity.ok(plans);
+    public ResponseEntity<Page<TravelPlanDetails>> getAllTravelPlans(
+            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+        return ResponseEntity.ok(travelPlanService.getAllPlans(pageable));
     }
 
     @GetMapping("/{id}")

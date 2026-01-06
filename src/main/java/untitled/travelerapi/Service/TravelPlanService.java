@@ -2,6 +2,8 @@ package untitled.travelerapi.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +34,9 @@ public class TravelPlanService {
     }
 
     @Transactional(readOnly = true)
-    public List<TravelPlanDetails> getAllPlans() {
-        return travelPlanRepository.findAll().stream()
-                .map(TravelPlanMapper::toPlanDetails)
-                .collect(Collectors.toList());
+    public Page<TravelPlanDetails> getAllPlans(Pageable pageable) {
+        return travelPlanRepository.findAll(pageable)
+                .map(TravelPlanMapper::toPlanDetails);
     }
 
     @Transactional(readOnly = true)

@@ -406,6 +406,7 @@ export function listTravelPlans() {
   if (response.status === 200 && body && body.content) {
     return body.content;
   }
+
   return [];
 }
 
