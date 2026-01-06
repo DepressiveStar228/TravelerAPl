@@ -13,7 +13,9 @@ import untitled.travelerapi.Repository.LocationRepository;
 import untitled.travelerapi.Repository.TravelPlanRepository;
 import untitled.travelerapi.Mapper.TravelPlanMapper;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TravelPlanService {
@@ -27,6 +29,13 @@ public class TravelPlanService {
         TravelPlan planToSave = TravelPlanMapper.toEntity(request);
         TravelPlan savedPlan = travelPlanRepository.saveAndFlush(planToSave);
         return TravelPlanMapper.toPlanDetails(savedPlan);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TravelPlanDetails> getAllPlans() {
+        return travelPlanRepository.findAll().stream()
+                .map(TravelPlanMapper::toPlanDetails)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

@@ -52,7 +52,8 @@ public class TravelPlanMapper {
                 entity.getDepartureDate(),
                 entity.getBudget(),
                 entity.getNotes(),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getVersion()
         );
     }
 

@@ -26,5 +26,8 @@ public record UpdateLocationRequest(
         @Digits(integer=8, fraction=2, message="Budget must have up to 2 decimal places")
         BigDecimal budget,
 
-        String notes
+        String notes,
+
+        @NotNull
+        Integer version
 ) { }

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,6 +22,12 @@ public class TravelPlanController {
     public ResponseEntity<?> createTravelPlan(@Valid @RequestBody CreateTravelPlanRequest request) {
         TravelPlanDetails createdPlan = travelPlanService.createPlan(request);
         return new ResponseEntity<>(createdPlan, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TravelPlanDetails>> getAllTravelPlans() {
+        List<TravelPlanDetails> plans = travelPlanService.getAllPlans();
+        return ResponseEntity.ok(plans);
     }
 
     @GetMapping("/{id}")

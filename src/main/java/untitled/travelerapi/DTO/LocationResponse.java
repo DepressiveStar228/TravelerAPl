@@ -16,5 +16,6 @@ public record LocationResponse(
         Instant departureDate,
         BigDecimal budget,
         String notes,
-        Instant createdAt
+        Instant createdAt,
+        Integer version
 ) {}

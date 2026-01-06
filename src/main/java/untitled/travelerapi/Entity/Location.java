@@ -54,6 +54,10 @@ public class Location {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Version
+    @Column(name = "version")
+    private Integer version = 1;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "travel_plan_id", nullable = false)
     private TravelPlan travelPlan;

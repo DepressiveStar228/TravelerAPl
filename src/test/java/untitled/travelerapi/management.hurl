@@ -27,6 +27,7 @@ Content-Type: application/json
 HTTP 201
 [Captures]
 location1_id: jsonpath "$.id"
+location1_version: jsonpath "$.version"
 
 [Asserts]
 jsonpath "$.name" == "Eiffel Tower"
@@ -42,12 +43,14 @@ Content-Type: application/json
   "latitude": 48.8606,
   "longitude": 2.3376,
   "budget": 15.00,
-  "notes": "Book tickets online"
+  "notes": "Book tickets online",
+  "version": {{location1_version}}
 }
 
 HTTP 201
 [Captures]
 location2_id: jsonpath "$.id"
+location2_version: jsonpath "$.version"
 
 [Asserts]
 jsonpath "$.visit_order" == 2
@@ -57,12 +60,14 @@ POST {{host}}/api/travel-plans/{{location_plan_id}}/locations
 Content-Type: application/json
 {
   "name": "Arc de Triomphe",
-  "budget": 12.00
+  "budget": 12.00,
+    "version": {{location2_version}}
 }
 
 HTTP 201
 [Captures]
 location3_id: jsonpath "$.id"
+location3_version: jsonpath "$.version"
 
 [Asserts]
 jsonpath "$.visit_order" == 3
@@ -84,7 +89,8 @@ Content-Type: application/json
 {
   "name": "Eiffel Tower (Night Visit)",
   "budget": 30.00,
-  "notes": "Amazing night illumination"
+  "notes": "Amazing night illumination",
+  "version": {{location3_version}}
 }
 
 HTTP 200

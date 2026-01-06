@@ -81,3 +81,5 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_travel_plans_updated_at 
     BEFORE UPDATE ON travel_plans 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+ALTER TABLE locations ADD COLUMN version INTEGER DEFAULT 1;

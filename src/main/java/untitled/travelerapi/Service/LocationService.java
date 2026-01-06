@@ -2,6 +2,7 @@ package untitled.travelerapi.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import untitled.travelerapi.DTO.LocationResponse;
@@ -30,8 +31,14 @@ public class LocationService {
         if (request.departureDate() != null) location.setDepartureDate(request.departureDate());
         if (request.budget() != null) location.setBudget(request.budget());
         if (request.notes() != null) location.setNotes(request.notes());
+        if (request.version() != null && !location.getVersion().equals(request.version())) {
+            throw new ObjectOptimisticLockingFailureException(
+                    "Conflict: Location was modified by another user. Current version: " + location.getVersion(),
+                    null
+            );
+        }
 
-        Location updatedLocation = locationRepository.save(location);
+        Location updatedLocation = locationRepository.saveAndFlush(location);
         return TravelPlanMapper.toLocationResponse(updatedLocation);
     }
 
