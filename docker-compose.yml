@@ -1,5 +1,39 @@
-version: '3.8'
 services:
+  # База даних PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: traveler_db
+    environment:
+      POSTGRES_USER: artem
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+      POSTGRES_DB: TravelerDB
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d TravelerDB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Ваш Spring Boot додаток
+  app:
+    build: .
+    container_name: traveler_api
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/TravelerDB
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-1234}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Моніторинг InfluxDB
   influxdb:
     image: influxdb:1.8
     ports:
@@ -7,6 +41,7 @@ services:
     environment:
       - INFLUXDB_DB=k6
 
+  # Візуалізація Grafana
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -16,3 +51,6 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     depends_on:
       - influxdb
+
+volumes:
+  postgres_data:
