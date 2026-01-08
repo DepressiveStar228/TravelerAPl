@@ -28,7 +28,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Репліка (Slave)
+    # Репліка (Slave)
   db_replica:
     image: postgres:16-alpine
     container_name: traveler_replica
@@ -41,18 +41,20 @@ services:
       - "55433:5432"
     entrypoint: [ "bash", "-c", "
           if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
-            echo 'Cloning master for physical replication...';
+            echo 'Cloning Master...';
+            export PGAPPNAME=traveler_replica;
             until pg_basebackup -h db -U repuser -D /var/lib/postgresql/data -Fp -Xs -R; do
-              echo 'Master not ready, retrying...';
+              echo 'Master not ready for backup, waiting...';
+              rm -rf /var/lib/postgresql/data/*;
               sleep 2;
             done;
+            echo 'Clone successful!';
             chmod 0700 /var/lib/postgresql/data;
           fi;
-          exec postgres -c wal_level=logical" ]
+          exec postgres -c wal_level=logical -c application_name=traveler_replica -c hot_standby=on" ]
     depends_on:
       db:
         condition: service_healthy
-
 
   # Ваш Spring Boot додаток
   app:
