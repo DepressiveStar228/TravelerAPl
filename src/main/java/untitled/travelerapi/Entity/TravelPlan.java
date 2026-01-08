@@ -1,11 +1,14 @@
 package untitled.travelerapi.Entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -58,21 +61,20 @@ public class TravelPlan {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @OneToMany(
-            mappedBy = "travelPlan",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private List<Location> locations = new ArrayList<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "locations", columnDefinition = "jsonb")
+    private List<LocationData> locations = new ArrayList<>();
 
-    public void addLocation(Location location) {
-        locations.add(location);
-        location.setTravelPlan(this);
-    }
-
-    public void removeLocation(Location location) {
-        locations.remove(location);
-        location.setTravelPlan(null);
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class LocationData {
+        private UUID id;
+        private String name;
+        private String address;
+        private BigDecimal latitude;
+        private BigDecimal longitude;
+        private Instant arrivalDate;
+        private Instant departureDate;
+        private BigDecimal budget;
+        private String notes;
     }
 }

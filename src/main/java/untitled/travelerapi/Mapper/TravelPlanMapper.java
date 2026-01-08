@@ -4,7 +4,6 @@ import untitled.travelerapi.DTO.CreateLocationRequest;
 import untitled.travelerapi.DTO.CreateTravelPlanRequest;
 import untitled.travelerapi.DTO.LocationResponse;
 import untitled.travelerapi.DTO.TravelPlanDetails;
-import untitled.travelerapi.Entity.Location;
 import untitled.travelerapi.Entity.TravelPlan;
 
 import java.util.UUID;
@@ -24,36 +23,21 @@ public class TravelPlanMapper {
         return entity;
     }
 
-    public static Location toLocationEntity(CreateLocationRequest dto) {
-        Location entity = new Location();
-        entity.setName(dto.name());
-        entity.setAddress(dto.address());
-        entity.setLatitude(dto.latitude());
-        entity.setLongitude(dto.longitude());
-        entity.setArrivalDate(dto.arrivalDate());
-        entity.setDepartureDate(dto.departureDate());
-        entity.setBudget(dto.budget());
-        entity.setNotes(dto.notes());
-        return entity;
-    }
-
-    public static LocationResponse toLocationResponse(Location entity) {
-        UUID planId = (entity.getTravelPlan() != null) ? entity.getTravelPlan().getId() : null;
-
+    public static LocationResponse toLocationResponse(TravelPlan.LocationData data, UUID planId) {
         return new LocationResponse(
-                entity.getId(),
+                data.getId(),
                 planId,
-                entity.getName(),
-                entity.getAddress(),
-                entity.getLatitude(),
-                entity.getLongitude(),
-                entity.getVisitOrder(),
-                entity.getArrivalDate(),
-                entity.getDepartureDate(),
-                entity.getBudget(),
-                entity.getNotes(),
-                entity.getCreatedAt(),
-                entity.getVersion()
+                data.getName(),
+                data.getAddress(),
+                data.getLatitude(),
+                data.getLongitude(),
+                null,
+                data.getArrivalDate(),
+                data.getDepartureDate(),
+                data.getBudget(),
+                data.getNotes(),
+                null,
+                null
         );
     }
 
@@ -71,15 +55,23 @@ public class TravelPlanMapper {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getLocations().stream()
-                        .sorted((l1, l2) -> {
-                            Integer o1 = l1.getVisitOrder();
-                            Integer o2 = l2.getVisitOrder();
-                            if (o1 == null) return 1;
-                            if (o2 == null) return -1;
-                            return o1.compareTo(o2);
-                        })
-                        .map(TravelPlanMapper::toLocationResponse)
+                        .map(loc -> toLocationResponse(loc, entity.getId()))
                         .collect(Collectors.toList())
         );
     }
+
+    public static TravelPlan.LocationData toLocationData(CreateLocationRequest dto) {
+        return new TravelPlan.LocationData(
+                UUID.randomUUID(),
+                dto.name(),
+                dto.address(),
+                dto.latitude(),
+                dto.longitude(),
+                dto.arrivalDate(),
+                dto.departureDate(),
+                dto.budget(),
+                dto.notes()
+        );
+    }
 }
+

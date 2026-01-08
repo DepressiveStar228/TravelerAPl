@@ -9,22 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import untitled.travelerapi.DTO.*;
-import untitled.travelerapi.Entity.Location;
 import untitled.travelerapi.Entity.TravelPlan;
-import untitled.travelerapi.Repository.LocationRepository;
 import untitled.travelerapi.Repository.TravelPlanRepository;
 import untitled.travelerapi.Mapper.TravelPlanMapper;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class TravelPlanService {
     @Autowired
     private TravelPlanRepository travelPlanRepository;
-    @Autowired
-    private LocationRepository locationRepository;
 
     @Transactional
     public TravelPlanDetails createPlan(CreateTravelPlanRequest request) {
@@ -100,12 +94,48 @@ public class TravelPlanService {
     @Transactional
     public LocationResponse addLocationToPlan(UUID planId, CreateLocationRequest request) {
         TravelPlan plan = travelPlanRepository.findById(planId)
-                .orElseThrow(() -> new EntityNotFoundException("Travel plan not found with id: " + planId));
+                .orElseThrow(() -> new EntityNotFoundException("Travel plan not found"));
 
-        Location newLocation = TravelPlanMapper.toLocationEntity(request);
-        newLocation.setTravelPlan(plan);
-        Location savedLocation = locationRepository.saveAndFlush(newLocation);
+        TravelPlan.LocationData newLoc = TravelPlanMapper.toLocationData(request);
+        plan.getLocations().add(newLoc);
 
-        return TravelPlanMapper.toLocationResponse(savedLocation);
+        travelPlanRepository.save(plan);
+        return TravelPlanMapper.toLocationResponse(newLoc, planId);
+    }
+
+    @Transactional
+    public LocationResponse updateLocation(UUID locationId, UpdateLocationRequest request) {
+        TravelPlan plan = travelPlanRepository.findByLocationId(locationId.toString())
+                .orElseThrow(() -> new EntityNotFoundException("Location not found"));
+
+        TravelPlan.LocationData loc = plan.getLocations().stream()
+                .filter(l -> l.getId().equals(locationId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Location data error"));
+
+        if (request.name() != null) loc.setName(request.name());
+        if (request.address() != null) loc.setAddress(request.address());
+        if (request.latitude() != null) loc.setLatitude(request.latitude());
+        if (request.longitude() != null) loc.setLongitude(request.longitude());
+        if (request.arrivalDate() != null) loc.setArrivalDate(request.arrivalDate());
+        if (request.departureDate() != null) loc.setDepartureDate(request.departureDate());
+        if (request.budget() != null) loc.setBudget(request.budget());
+        if (request.notes() != null) loc.setNotes(request.notes());
+
+        travelPlanRepository.save(plan);
+        return TravelPlanMapper.toLocationResponse(loc, plan.getId());
+    }
+
+    @Transactional
+    public void deleteLocation(UUID locationId) {
+        TravelPlan plan = travelPlanRepository.findByLocationId(locationId.toString())
+                .orElseThrow(() -> new EntityNotFoundException("Location not found with id: " + locationId));
+        boolean removed = plan.getLocations().removeIf(loc -> loc.getId().equals(locationId));
+
+        if (!removed) {
+            throw new EntityNotFoundException("Location could not be found in the plan's data");
+        }
+
+        travelPlanRepository.save(plan);
     }
 }
