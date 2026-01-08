@@ -23,7 +23,7 @@ services:
       - ./db/replications/publisher:/docker-entrypoint-replications:ro
       - ./db/replications/common:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d TravelerDB" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -32,24 +32,27 @@ services:
   db_replica:
     image: postgres:16-alpine
     container_name: traveler_replica
+    user: postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
-      POSTGRES_DB: TravelerDB
-    command:
-      - "postgres"
-      - "-c"
-      - "wal_level=logical"
+      PGPASSWORD: rep_pass
     volumes:
       - postgres_replica_data:/var/lib/postgresql/data
-      - ./db/migrations:/docker-entrypoint-migrations:ro
-      - ./db/replications/subscriber:/docker-entrypoint-replications:ro
-      - ./db/replications/common:/docker-entrypoint-initdb.d:ro
     ports:
       - "55433:5432"
+    entrypoint: [ "bash", "-c", "
+          if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+            echo 'Cloning master for physical replication...';
+            until pg_basebackup -h db -U repuser -D /var/lib/postgresql/data -Fp -Xs -R; do
+              echo 'Master not ready, retrying...';
+              sleep 2;
+            done;
+            chmod 0700 /var/lib/postgresql/data;
+          fi;
+          exec postgres -c wal_level=logical" ]
     depends_on:
       db:
         condition: service_healthy
+
 
   # Ваш Spring Boot додаток
   app:
