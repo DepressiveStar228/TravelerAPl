@@ -22,6 +22,7 @@ services:
       - ./db/migrations:/docker-entrypoint-migrations:ro
       - ./db/replications/publisher:/docker-entrypoint-replications:ro
       - ./db/replications/common:/docker-entrypoint-initdb.d:ro
+    networks: [traveler_net]
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -52,6 +53,7 @@ services:
             chmod 0700 /var/lib/postgresql/data;
           fi;
           exec postgres -c wal_level=logical -c application_name=traveler_replica -c hot_standby=on" ]
+    networks: [traveler_net]
     depends_on:
       db:
         condition: service_healthy
@@ -78,6 +80,7 @@ services:
             chmod 0700 /var/lib/postgresql/data;
           fi;
           exec postgres -c wal_level=logical -c application_name=traveler_replica_2 -c hot_standby=on" ]
+    networks: [traveler_net]
     depends_on:
       db:
         condition: service_healthy
@@ -94,6 +97,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-1234}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks: [traveler_net]
     depends_on:
       db:
         condition: service_healthy
@@ -102,3 +106,7 @@ volumes:
   postgres_data:
   postgres_replica_data:
   postgres_replica_2_data:
+
+networks:
+  traveler_net:
+    driver: bridge
