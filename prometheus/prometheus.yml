@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'traveler-api'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['app:8080']
+
+  - job_name: 'postgres-cluster'
+    static_configs:
+      - targets:
+          - 'db-exporter:9187'
+          - 'replica1-exporter:9187'
+          - 'replica2-exporter:9187'

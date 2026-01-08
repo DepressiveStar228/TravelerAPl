@@ -70,7 +70,6 @@ services:
     ports:
       - "55434:5432"
     entrypoint: [ "bash", "-c", "
-          set -e;
           if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
             export PGAPPNAME=traveler_replica_2;
             until pg_basebackup -h db -U repuser -D /var/lib/postgresql/data -Fp -Xs -R; do
@@ -102,10 +101,59 @@ services:
       db:
         condition: service_healthy
 
+  db-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: traveler_db_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:${DB_PASSWORD:-1234}@db:5432/TravelerDB?sslmode=disable"
+    networks: [traveler_net]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  replica1-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: traveler_replica1_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:${DB_PASSWORD:-1234}@db_replica:5432/TravelerDB?sslmode=disable"
+    networks: [traveler_net]
+
+  replica2-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: traveler_replica2_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:${DB_PASSWORD:-1234}@db_replica_2:5432/TravelerDB?sslmode=disable"
+    networks: [traveler_net]
+
+  # --- Prometheus ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: traveler_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks: [traveler_net]
+
+  # --- Grafana ---
+  grafana:
+    image: grafana/grafana:latest
+    container_name: traveler_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks: [traveler_net]
+
 volumes:
   postgres_data:
   postgres_replica_data:
   postgres_replica_2_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   traveler_net:
