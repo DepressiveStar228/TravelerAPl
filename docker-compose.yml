@@ -1,21 +1,55 @@
 services:
-  # База даних PostgreSQL
+  # Головна база даних PostgreSQL(Master)
   db:
     image: postgres:16-alpine
     container_name: traveler_db
     environment:
-      POSTGRES_USER: artem
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
       POSTGRES_DB: TravelerDB
     ports:
       - "5433:5432"
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_replication_slots=10"
+      - "-c"
+      - "max_wal_senders=10"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/replications/publisher:/docker-entrypoint-replications:ro
+      - ./db/replications/common:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d TravelerDB" ]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # Репліка (Slave)
+  db_replica:
+    image: postgres:16-alpine
+    container_name: traveler_replica
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+      POSTGRES_DB: TravelerDB
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/replications/subscriber:/docker-entrypoint-replications:ro
+      - ./db/replications/common:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "55433:5432"
+    depends_on:
+      db:
+        condition: service_healthy
 
   # Ваш Spring Boot додаток
   app:
@@ -33,24 +67,6 @@ services:
       db:
         condition: service_healthy
 
-  # Моніторинг InfluxDB
-  influxdb:
-    image: influxdb:1.8
-    ports:
-      - "8086:8086"
-    environment:
-      - INFLUXDB_DB=k6
-
-  # Візуалізація Grafana
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-    depends_on:
-      - influxdb
-
 volumes:
   postgres_data:
+  postgres_replica_data:
